@@ -1,0 +1,16 @@
+println("Hello, world!");
+
+class Greeter {
+  pri str name;
+
+  init(name) {
+    this.name = name;
+  }
+
+  greet() {
+    println("Hello, " + this.name + "!");
+  }
+}
+
+var g = new Greeter("Alice");
+g.greet();
