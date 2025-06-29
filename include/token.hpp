@@ -29,6 +29,9 @@ enum class TokenType
     /* Literals */
     IDENTIFIER, STRING, NUMBER,
 
+    /* Special tokens */
+    COMMENT,
+
     /* Keywords */
     CLASS, VAR, IF, ELSE,
     WHILE, FOR, NEW, INIT,
