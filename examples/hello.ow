@@ -1,7 +1,7 @@
-println("Hello, world!");
+print("Hello, world!");
 
 class Greeter {
-  pri str name;
+  str name;
 
   init(name) {
     this.name = name;
