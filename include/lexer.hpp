@@ -23,7 +23,11 @@ struct Lexer
     std::vector< Token > tokens{};
     std::ifstream istream;
 
-    Lexer( const std::string& filename ) : istream{ filename } {}
+    Lexer( const std::string& filename ) : istream(filename) {
+        if (!istream.is_open()) {
+            throw LexerException();
+        }
+    }
 
     std::vector< Token > scan_tokens();
 

@@ -6,91 +6,120 @@
 
 #include "../include/util.hpp"
 #include "../include/lexer.hpp"
-
-std::vector< Token > get_tokens( const std::string& filename )
+  
+std::vector< Token > Lexer::scan_tokens()
 {
-    std::ifstream istrm{ filename };    
-    if ( !istrm.is_open() )
-        throw LexerException();
-
-    std::vector< Token > tokens;
-    std::string line;
-    int line_number = 1;
-    while ( std::getline( istrm, line ) )
+    while ( !is_finished() )
     {
-        std::istringstream iss( line );
-        std::string word;
-        while ( iss >> word )
-        {
-            Token token;
-            token.line = line_number;
-
-            if ( word == "(" ) token.type = TokenType::LEFT_PAREN;
-            else if ( word == ")" ) token.type = TokenType::RIGHT_PAREN;
-            else if ( word == "{" ) token.type = TokenType::LEFT_BRACE;
-            else if ( word == "}" ) token.type = TokenType::RIGHT_BRACE;
-            else if ( word == "," ) token.type = TokenType::COMMA;
-            else if ( word == "." ) token.type = TokenType::DOT;
-            else if ( word == ";" ) token.type = TokenType::SEMICOLON;
-            else if ( word == "-" ) token.type = TokenType::MINUS;
-            else if ( word == "+" ) token.type = TokenType::PLUS;
-            else if ( word == "/" ) token.type = TokenType::SLASH;
-            else if ( word == "*" ) token.type = TokenType::STAR;
-            else if ( word == "%" ) token.type = TokenType::PERCENT;
-            else if ( word == "!" ) token.type = TokenType::BANG;
-            else if ( word == "!=" ) token.type = TokenType::BANG_EQUAL;
-            else if ( word == "=" ) token.type = TokenType::EQUAL;
-            else if ( word == "==" ) token.type = TokenType::EQUAL_EQUAL;
-            else if ( word == ">" ) token.type = TokenType::GREATER;
-            else if ( word == ">=" ) token.type = TokenType::GREATER_EQUAL;
-            else if ( word == "<" ) token.type = TokenType::LESS;
-            else if ( word == "<=" ) token.type = TokenType::LESS_EQUAL;
-            else if ( word == "and" ) token.type = TokenType::AND;
-            else if ( word == "or" ) token.type = TokenType::OR;
-            
-            else if ( word == "class" ) token.type = TokenType::CLASS;
-            else if ( word == "var" ) token.type = TokenType::VAR;
-            else if ( word == "if" ) token.type = TokenType::IF;
-            else if ( word == "else" ) token.type = TokenType::ELSE;
-            else if ( word == "while" ) token.type = TokenType::WHILE;
-            else if ( word == "for" ) token.type = TokenType::FOR;
-            else if ( word == "new" ) token.type = TokenType::NEW;
-            else if ( word == "init" ) token.type = TokenType::INIT;
-            else if ( word == "this" ) token.type = TokenType::THIS;
-            else if ( word == "true" ) token.type = TokenType::TRUE;
-            else if ( word == "false" ) token.type = TokenType::FALSE;
-            else if ( word == "nil" ) token.type = TokenType::NIL;
-            else if ( word == "return" ) token.type = TokenType::RETURN;
-            else if ( word == "break" ) token.type = TokenType::BREAK;
-            else if ( word == "continue" ) token.type = TokenType::CONTINUE;
-            else if ( word == "print" ) token.type = TokenType::PRINT;
-            else if ( word == "fun" ) token.type = TokenType::FUN;
-            else if ( word == "super" ) token.type = TokenType::SUPER;
-            /* TODO: there is an error, if there is a number and then semicolon right after, we are not lexing it correctly */
-            else if ( std::isdigit( word[ 0 ] ) || ( word[ 0 ] == '.' && word.length() > 1 && std::isdigit( word[ 1 ] ) ) )
-            {
-                token.type = TokenType::NUMBER;
-            }
-            else if ( word[0] == '"' && word.back() == '"' )
-            {
-                token.type = TokenType::STRING;
-            }
-            else
-            {
-                token.type = TokenType::IDENTIFIER;
-            }
-            
-            token.lexeme = word;
-            tokens.push_back( token );
-        }
-        ++line_number;
+        start = current;
+        Token token = scan_token();
+        if ( token.type != TokenType::COMMENT ) 
+            tokens.push_back(token);
     }
-    
-    Token eof_token;
-    eof_token.type = TokenType::EOF_TOKEN;
-    eof_token.lexeme = "";
-    eof_token.line = line_number;
-    tokens.push_back( eof_token );
-    
+    tokens.push_back( { TokenType::EOF_TOKEN, "", line } );
     return tokens;
+}
+
+Token Lexer::scan_token()
+{
+    skip_whitespace();
+    char c = advance();
+
+    if ( c == '(' ) return { TokenType::LEFT_PAREN, "(", line };
+    if ( c == ')' ) return { TokenType::RIGHT_PAREN, ")", line };
+    if ( c == '{' ) return { TokenType::LEFT_BRACE, "{", line };
+    if ( c == '}' ) return { TokenType::RIGHT_BRACE, "}", line };
+    if ( c == ',' ) return { TokenType::COMMA, ",", line };
+    if ( c == '.' ) return { TokenType::DOT, ".", line };
+    if ( c == ';' ) return { TokenType::SEMICOLON, ";", line };
+    if ( c == '-' ) return { TokenType::MINUS, "-", line };
+    if ( c == '+' ) return { TokenType::PLUS, "+", line };
+    if ( c == '/' ) return { TokenType::SLASH, "/", line };
+    if ( c == '*' ) return { TokenType::STAR, "*", line };
+    if ( c == '#' ) return { TokenType::COMMENT, "#", line }; 
+    if ( c == '%' ) return { TokenType::PERCENT, "%", line };
+    if ( c == '!' ) return { advance() == '=' ? TokenType::BANG_EQUAL : TokenType::BANG, "!", line };
+    if ( c == '=' ) return { advance() == '=' ? TokenType::EQUAL_EQUAL : TokenType::EQUAL, "=", line };
+    if ( c == '>' ) return { advance() == '=' ? TokenType::GREATER_EQUAL : TokenType::GREATER, ">", line };
+    if ( c == '<' ) return { advance() == '=' ? TokenType::LESS_EQUAL : TokenType::LESS, "<", line };
+    if ( c == '&' ) return { advance() == '&' ? TokenType::AND : TokenType::BANG, "&", line };
+    if ( c == '|' ) return { advance() == '|' ? TokenType::OR : TokenType::BANG, "|", line };
+    if ( std::isdigit(c) )
+    {
+        std::string number;
+        do
+        {
+            number += c;
+            c = advance();
+        } while ( std::isdigit(c) );
+        return { TokenType::NUMBER, number, line };
+    }
+
+    if ( std::isalpha(c) || c == '_' )
+    {
+        std::string identifier;
+        do
+        {
+            identifier += c;
+            c = advance();
+        } while ( std::isalnum(c) || c == '_' );
+        
+        if ( identifier == "class" ) return { TokenType::CLASS, identifier, line };
+        if ( identifier == "var" ) return { TokenType::VAR, identifier, line };
+        if ( identifier == "if" ) return { TokenType::IF, identifier, line };
+        if ( identifier == "else" ) return { TokenType::ELSE, identifier, line };
+        if ( identifier == "while" ) return { TokenType::WHILE, identifier, line };
+        if ( identifier == "for" ) return { TokenType::FOR, identifier, line };
+        if ( identifier == "new" ) return { TokenType::NEW, identifier, line };
+        if ( identifier == "init" ) return { TokenType::INIT, identifier, line };
+        if ( identifier == "this" ) return { TokenType::THIS, identifier, line };
+        if ( identifier == "true" ) return { TokenType::TRUE, identifier, line };
+        if ( identifier == "false" ) return { TokenType::FALSE, identifier, line };
+        if ( identifier == "nil" ) return { TokenType::NIL, identifier, line };
+        if ( identifier == "return" ) return { TokenType::RETURN, identifier, line };
+        if ( identifier == "break" ) return { TokenType::BREAK, identifier, line };
+        if ( identifier == "continue" ) return { TokenType::CONTINUE, identifier, line };
+        if ( identifier == "print" ) return { TokenType::PRINT, identifier, line };
+        if ( identifier == "fun" ) return { TokenType::FUN, identifier, line };
+        if ( identifier == "super" ) return { TokenType::SUPER, identifier, line };
+
+        return { TokenType::IDENTIFIER, identifier, line };
+    }
+
+    std::cerr << "Unexpected character: '" << c << "' at line " << line << '\n';
+    return { TokenType::EOF_TOKEN, "", line };
+}
+
+char Lexer::advance()
+{
+    char c = istream.get();
+    if ( c == '\n' ) 
+        ++line;
+    
+    ++current;
+    return c;
+}
+
+char Lexer::peek()
+{
+    if ( is_finished() )
+        return '\0'; 
+    return istream.peek();
+}
+
+bool Lexer::is_finished()
+{
+    return istream.eof() || istream.peek() == EOF;
+}
+
+void Lexer::skip_whitespace()
+{
+    char c = peek();
+    while ( !is_finished() && std::isspace(c) )
+    {
+        if ( c == '\n' ) 
+            ++line;
+        advance();
+        c = peek();
+    }
 }
