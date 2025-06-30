@@ -14,13 +14,17 @@ int main( int argc, char* argv[] )
         return 1;
     }
 
-    if ( !check_owl_filename( argv[ 1 ] ) )
+    if ( !has_suffix( argv[ 1 ], ".ow" ) )
+    {
+        std::cerr<< "File suffix is not .ow" << '\n';
+        std::cerr<< "Please provide a valid Owl file." << '\n';
         return 1;
-    
+    }
 
     try
     {
-        const auto& tokens = get_tokens( argv[ 1 ] );
+        Lexer lex{ argv[1] };
+        const auto& tokens = lex.scan_tokens();
         for ( const auto& token : tokens )
             std::cout<< to_string( token ) << '\n';   
     }
@@ -28,5 +32,4 @@ int main( int argc, char* argv[] )
     {
         std::cerr << e.what() << '\n';
     }
-    
 }

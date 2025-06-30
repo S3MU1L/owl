@@ -5,7 +5,7 @@
 
 #include "token.hpp"
 
-bool check_owl_filename( const std::string& filename );
+bool has_suffix( const std::string& str, const std::string& suffix );
 
 std::string to_string( Token token );
 

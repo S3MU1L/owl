@@ -16,7 +16,8 @@ enum class TokenType
     /* Single-character tokens */
     LEFT_PAREN, RIGHT_PAREN,
     LEFT_BRACE, RIGHT_BRACE,
-    COMMA, DOT, SEMICOLON,
+    LEFT_BRACKET, RIGHT_BRACKET,
+    COMMA, DOT, SEMICOLON, COLON,
 
     /* Operators */
     MINUS, PLUS, SLASH, STAR, PERCENT,
@@ -38,6 +39,9 @@ enum class TokenType
     THIS, TRUE, FALSE, NIL,
     RETURN, BREAK, CONTINUE,
     PRINT, FUN, SUPER,
+
+    /* Type keywords */
+    INT, STRING_TYPE, BOOL, FLOAT, DOUBLE, VOID,
 
     /* End-of-file */
     EOF_TOKEN

@@ -6,22 +6,13 @@
 #include <fstream>
 #include <sstream>
 
-bool check_owl_filename( const std::string& filename )
+bool has_suffix( const std::string& str, const std::string& suffix )
 {
-    std::string::size_type n = filename.find(".");
-    if ( std::string::npos == n )
-    {
-        std::cout << "File does not contain a dot\n";
+    std::size_t suffix_length = suffix.length();
+    if ( str.length() < suffix_length )
         return false;
-    }
-
-    if ( filename.substr( n ) != ".ow" )
-    {
-        std::cout<< "File suffix is not .ow\n";
-        return false;
-    }
-
-    return true;
+    
+    return str.compare( str.length() - suffix_length, suffix_length, suffix ) == 0;
 }
 
 std::string to_string( Token token )
@@ -32,9 +23,12 @@ std::string to_string( Token token )
         case TokenType::RIGHT_PAREN: return "RIGHT_PAREN";
         case TokenType::LEFT_BRACE: return "LEFT_BRACE";
         case TokenType::RIGHT_BRACE: return "RIGHT_BRACE";
+        case TokenType::LEFT_BRACKET: return "LEFT_BRACKET";
+        case TokenType::RIGHT_BRACKET: return "RIGHT_BRACKET";
         case TokenType::COMMA: return "COMMA";
         case TokenType::DOT: return "DOT";
         case TokenType::SEMICOLON: return "SEMICOLON";
+        case TokenType::COLON: return "COLON";
         case TokenType::MINUS: return "MINUS";
         case TokenType::PLUS: return "PLUS";
         case TokenType::SLASH: return "SLASH";
@@ -50,6 +44,7 @@ std::string to_string( Token token )
         case TokenType::LESS_EQUAL: return "LESS_EQUAL";
         case TokenType::AND: return "AND";
         case TokenType::OR: return "OR";
+        case TokenType::COMMENT: return "COMMENT";
         case TokenType::IDENTIFIER: return "IDENTIFIER";
         case TokenType::STRING: return "STRING";
         case TokenType::NUMBER: return "NUMBER";
@@ -71,6 +66,12 @@ std::string to_string( Token token )
         case TokenType::PRINT: return "PRINT";
         case TokenType::FUN: return "FUN";
         case TokenType::SUPER: return "SUPER";
+        case TokenType::INT: return "INT";
+        case TokenType::STRING_TYPE: return "STRING_TYPE";
+        case TokenType::BOOL: return "BOOL";
+        case TokenType::FLOAT: return "FLOAT";
+        case TokenType::DOUBLE: return "DOUBLE";
+        case TokenType::VOID: return "VOID";
         case TokenType::EOF_TOKEN: return "EOF";
         default: return "UNRECOGNISED_TOKEN";
     }
