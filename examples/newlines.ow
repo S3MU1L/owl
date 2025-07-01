@@ -1,0 +1,18 @@
+# Hello
+# Hello
+# Hello
+var x = 10 # What the fkkk
+var y = 20
+print x + y
+
+# Line continuation example
+var long_expression = x + \
+                     y + \
+                     30
+
+if x > 5
+    print "x is greater than 5"
+
+class MyClass
+    var field1 = 100
+    var field2 = 200

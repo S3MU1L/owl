@@ -31,7 +31,7 @@ enum class TokenType
     IDENTIFIER, STRING, NUMBER,
 
     /* Special tokens */
-    COMMENT,
+    COMMENT, NEWLINE,
 
     /* Keywords */
     CLASS, VAR, IF, ELSE,

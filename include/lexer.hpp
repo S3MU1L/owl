@@ -40,4 +40,8 @@ struct Lexer
     bool is_finished();
 
     void skip_whitespace();
+    
+    void skip_whitespace_except_newline();
+
+    void skip_line(); 
 };

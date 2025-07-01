@@ -21,10 +21,33 @@ std::vector< Token > Lexer::scan_tokens()
 
 Token Lexer::scan_token()
 {
-    skip_whitespace();
     char c = advance();
     if ( is_finished() )
         return { TokenType::EOF_TOKEN, "", line };
+
+    if ( std::isspace( c ) && c != '\n' )
+    {
+        skip_whitespace_except_newline();
+        return scan_token();
+    }
+
+    if ( c == '\n' )
+    {
+        return { TokenType::NEWLINE, "\\n", line - 1 }; 
+    }
+
+    if ( c == '\\' )
+    {
+        char next = peek();
+        if ( next == '\n' )
+        {
+            advance();
+            skip_whitespace_except_newline(); 
+            return scan_token(); 
+        }
+        std::cerr << "Unexpected character: '\\' at line: " << line << '\n';
+        return { TokenType::EOF_TOKEN, "", line };
+    }
 
     if ( c == '(' ) return { TokenType::LEFT_PAREN, "(", line };
     if ( c == ')' ) return { TokenType::RIGHT_PAREN, ")", line };
@@ -40,7 +63,7 @@ Token Lexer::scan_token()
     if ( c == '+' ) return { TokenType::PLUS, "+", line };
     if ( c == '/' ) return { TokenType::SLASH, "/", line };
     if ( c == '*' ) return { TokenType::STAR, "*", line };
-    if ( c == '#' ) return { TokenType::COMMENT, "#", line }; 
+    if ( c == '#' ) {  skip_line(); return { TokenType::COMMENT, "#", line }; }  
     if ( c == '%' ) return { TokenType::PERCENT, "%", line };
     if ( c == '!' ) return { advance() == '=' ? TokenType::BANG_EQUAL : TokenType::BANG, "!", line };
     if ( c == '=' ) return { advance() == '=' ? TokenType::EQUAL_EQUAL : TokenType::EQUAL, "=", line };
@@ -69,33 +92,33 @@ Token Lexer::scan_token()
             identifier += c;
             c = advance();
         } while ( std::isalnum( c ) || c == '_' );
-        
         istream.putback( c ); 
-        if ( identifier == "class" ) return { TokenType::CLASS, identifier, line };
-        if ( identifier == "var" ) return { TokenType::VAR, identifier, line };
-        if ( identifier == "if" ) return { TokenType::IF, identifier, line };
-        if ( identifier == "else" ) return { TokenType::ELSE, identifier, line };
-        if ( identifier == "while" ) return { TokenType::WHILE, identifier, line };
-        if ( identifier == "for" ) return { TokenType::FOR, identifier, line };
-        if ( identifier == "new" ) return { TokenType::NEW, identifier, line };
-        if ( identifier == "init" ) return { TokenType::INIT, identifier, line };
-        if ( identifier == "this" ) return { TokenType::THIS, identifier, line };
-        if ( identifier == "true" ) return { TokenType::TRUE, identifier, line };
-        if ( identifier == "false" ) return { TokenType::FALSE, identifier, line };
-        if ( identifier == "nil" ) return { TokenType::NIL, identifier, line };
-        if ( identifier == "return" ) return { TokenType::RETURN, identifier, line };
-        if ( identifier == "break" ) return { TokenType::BREAK, identifier, line };
-        if ( identifier == "continue" ) return { TokenType::CONTINUE, identifier, line };
-        if ( identifier == "print" ) return { TokenType::PRINT, identifier, line };
-        if ( identifier == "fun" ) return { TokenType::FUN, identifier, line };
-        if ( identifier == "super" ) return { TokenType::SUPER, identifier, line };
+        
+        if ( identifier == "class"    )   return { TokenType::CLASS, identifier, line };
+        if ( identifier == "var"      )   return { TokenType::VAR, identifier, line };
+        if ( identifier == "if"       )   return { TokenType::IF, identifier, line };
+        if ( identifier == "else"     )   return { TokenType::ELSE, identifier, line };
+        if ( identifier == "while"    )   return { TokenType::WHILE, identifier, line };
+        if ( identifier == "for"      )   return { TokenType::FOR, identifier, line };
+        if ( identifier == "new"      )   return { TokenType::NEW, identifier, line };
+        if ( identifier == "init"     )   return { TokenType::INIT, identifier, line };
+        if ( identifier == "this"     )   return { TokenType::THIS, identifier, line };
+        if ( identifier == "true"     )   return { TokenType::TRUE, identifier, line };
+        if ( identifier == "false"    )   return { TokenType::FALSE, identifier, line };
+        if ( identifier == "nil"      )   return { TokenType::NIL, identifier, line };
+        if ( identifier == "return"   )   return { TokenType::RETURN, identifier, line };
+        if ( identifier == "break"    )   return { TokenType::BREAK, identifier, line };
+        if ( identifier == "continue" )   return { TokenType::CONTINUE, identifier, line };
+        if ( identifier == "print"    )   return { TokenType::PRINT, identifier, line };
+        if ( identifier == "fun"      )   return { TokenType::FUN, identifier, line };
+        if ( identifier == "super"    )   return { TokenType::SUPER, identifier, line };
 
-        if ( identifier == "int" ) return { TokenType::INT, identifier, line };
-        if ( identifier == "string" ) return { TokenType::STRING_TYPE, identifier, line };
-        if ( identifier == "bool" ) return { TokenType::BOOL, identifier, line };
-        if ( identifier == "float" ) return { TokenType::FLOAT, identifier, line };
-        if ( identifier == "double" ) return { TokenType::DOUBLE, identifier, line };
-        if ( identifier == "void" ) return { TokenType::VOID, identifier, line };
+        if ( identifier == "int"      )   return { TokenType::INT, identifier, line };
+        if ( identifier == "string"   )   return { TokenType::STRING_TYPE, identifier, line };
+        if ( identifier == "bool"     )   return { TokenType::BOOL, identifier, line };
+        if ( identifier == "float"    )   return { TokenType::FLOAT, identifier, line };
+        if ( identifier == "double"   )   return { TokenType::DOUBLE, identifier, line };
+        if ( identifier == "void"     )   return { TokenType::VOID, identifier, line };
 
         return { TokenType::IDENTIFIER, identifier, line };
     }
@@ -155,6 +178,26 @@ void Lexer::skip_whitespace()
     {
         if ( c == '\n' ) 
             ++line;
+        advance();
+        c = peek();
+    }
+}
+
+void Lexer::skip_whitespace_except_newline()
+{
+    char c = peek();
+    while ( !is_finished() && std::isspace( c ) && c != '\n' )
+    {
+        advance();
+        c = peek();
+    }
+}
+
+void Lexer::skip_line()
+{
+    char c = peek();
+    while ( !is_finished() && c != '\n' )
+    {
         advance();
         c = peek();
     }

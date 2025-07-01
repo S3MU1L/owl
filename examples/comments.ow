@@ -1,0 +1,9 @@
+# This is a single-line comment
+var x = 10  # Another comment at end of line
+
+var name = "Alice"
+
+var y = 20  
+print x
+print name
+print y

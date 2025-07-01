@@ -45,6 +45,7 @@ std::string to_string( Token token )
         case TokenType::AND: return "AND";
         case TokenType::OR: return "OR";
         case TokenType::COMMENT: return "COMMENT";
+        case TokenType::NEWLINE: return "NEWLINE";
         case TokenType::IDENTIFIER: return "IDENTIFIER";
         case TokenType::STRING: return "STRING";
         case TokenType::NUMBER: return "NUMBER";
